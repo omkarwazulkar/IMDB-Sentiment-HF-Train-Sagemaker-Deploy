@@ -1,5 +1,5 @@
 # Pull Python Image from Docker Hub
-FROM python:3.10
+FROM public.ecr.aws/docker/library/python:3.10
 
 # Maintainer info
 MAINTAINER you_name <your_email@example.com>
