@@ -1,4 +1,4 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import boto3
 import subprocess
 import os
@@ -17,7 +17,7 @@ s3_key = os.path.basename(tar_file_path)
 model_folder = "hf_model"
 os.makedirs(model_folder, exist_ok=True)
 
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 model.save_pretrained(model_folder)
