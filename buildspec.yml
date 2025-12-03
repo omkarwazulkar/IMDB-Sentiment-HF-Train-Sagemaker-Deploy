@@ -2,7 +2,6 @@ version: 0.2
 
 env:
   variables:
-    HF_MODEL_ID: "omkarwazulkar/SentimentModel-V1.0"
     S3_BUCKET: "648758970526-us-east-1-models"
     MODEL_TAR: "model.tar.gz"
     ECR_REPO: "my-hf-model-ecr"
@@ -11,49 +10,24 @@ env:
 phases:
   install:
     commands:
-      - echo "Installing system dependencies..."
-      - apt-get update
-      - apt-get install -y git
-
       - echo "Installing Python dependencies..."
       - pip install --upgrade pip
-      - pip install transformers torch boto3
+      - pip install boto3
 
   pre_build:
     commands:
-      - echo "Logging in to Amazon ECR..."
+      - echo "Logging into Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-      - echo "Creating ECR repository if it does not exist..."
+      - echo "Ensuring ECR repo exists..."
       - |
         if ! aws ecr describe-repositories --repository-names $ECR_REPO --region $AWS_REGION > /dev/null 2>&1; then
           aws ecr create-repository --repository-name $ECR_REPO --region $AWS_REGION
         fi
 
-      - echo "Downloading HuggingFace model: $HF_MODEL_ID"
-      - mkdir -p model
-      - |
-        python - <<EOF
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-
-model_id = "$HF_MODEL_ID"
-
-print("Downloading tokenizer...")
-tokenizer = AutoTokenizer.from_pretrained(model_id)
-tokenizer.save_pretrained("model")
-
-print("Downloading model...")
-model = AutoModelForSequenceClassification.from_pretrained(model_id)
-model.save_pretrained("model")
-
-print("Model saved.")
-EOF
-
-      - echo "Packaging model into model.tar.gz..."
-      - tar -czvf $MODEL_TAR -C model .
-
-      - echo "Uploading model.tar.gz to S3..."
-      - aws s3 cp $MODEL_TAR s3://$S3_BUCKET/$MODEL_TAR
+      - echo "Model file already exists in S3 at:"
+      - echo "s3://$S3_BUCKET/$MODEL_TAR"
+      - echo "Skipping download/packaging since model.tar.gz is already present."
 
   build:
     commands:
@@ -68,4 +42,4 @@ EOF
       - echo "Pushing Docker image to ECR..."
       - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/$ECR_REPO:latest
 
-      - echo "Build completed successfully."
+      - echo "DONE: Docker image pushed to ECR successfully."
