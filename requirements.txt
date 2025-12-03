@@ -1,8 +1,7 @@
-transformers==4.44.2
-torch==2.4.0
-tokenizers==0.19.1
-accelerate==0.33.0
-
 Flask
 numpy<2
+torch==2.4.0
 pandas==2.2.2
+tokenizers==0.19.1
+accelerate==0.33.0
+transformers==4.44.2
